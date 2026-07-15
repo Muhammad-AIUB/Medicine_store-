@@ -103,6 +103,12 @@ Notes that will save you time:
   PrismaPg adapter in PrismaService.
 - Playwright: don't use bare `getByRole("alert")` — Next.js's route
   announcer also has role=alert; match message text instead.
+- Lint: flat-config ESLint per workspace (`eslint.config.mjs`). Next apps use
+  `eslint-config-next` (core-web-vitals + typescript); server/shared use
+  typescript-eslint. `npm run lint` at root runs all four. Next apps ignore
+  `next-env.d.ts` (generated) and `*.config.*`. CI gates lint before build.
+  Note: `npm test` does NOT typecheck or lint — run `npm run lint` and the
+  builds before pushing UI changes.
 - Server env: `server/.env` (copied from `.env.example`). **Active DB is
   Neon cloud PG** (since 2026-07-15): `DATABASE_URL` = pooled endpoint
   (runtime, PrismaPg adapter), `DIRECT_DATABASE_URL` = non-pooler endpoint

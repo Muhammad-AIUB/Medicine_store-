@@ -43,7 +43,7 @@ export default function PolicyPage() {
               it from your bill on the spot.
             </li>
             <li>
-              <span className="font-medium">We can't reach you?</span> If your phone is unreachable
+              <span className="font-medium">We can&apos;t reach you?</span> If your phone is unreachable
               after 3 attempts, the order is cancelled automatically — nothing owed.
             </li>
           </ul>

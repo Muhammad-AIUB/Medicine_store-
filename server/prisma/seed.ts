@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /**
  * Idempotent seed: ~100 OTC SKUs + initial admin user.
  *
