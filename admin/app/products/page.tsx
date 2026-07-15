@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { formatBdt, productUpsertSchema, type ProductDto, type ProductUpsertInput } from "@medistore/shared";
+import {
+  formatBdt,
+  productUpsertSchema,
+  type ProductDto,
+  type ProductUpsertFormInput,
+  type ProductUpsertInput,
+} from "@medistore/shared";
 import { adminApi, ApiRequestError } from "@/lib/api";
 import { useAdminGuard } from "@/lib/use-admin-auth";
 
@@ -156,7 +162,7 @@ function ProductForm({
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ProductUpsertInput>({
+  } = useForm<ProductUpsertFormInput, unknown, ProductUpsertInput>({
     resolver: zodResolver(productUpsertSchema),
     defaultValues: product
       ? {

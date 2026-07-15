@@ -119,6 +119,12 @@ export const productUpsertSchema = z.object({
 });
 
 export type ProductUpsertInput = z.infer<typeof productUpsertSchema>;
+/**
+ * Form-side type: what react-hook-form holds BEFORE zod applies defaults.
+ * Fields with .default() are optional here but required in ProductUpsertInput;
+ * useForm needs both: useForm<ProductUpsertFormInput, unknown, ProductUpsertInput>.
+ */
+export type ProductUpsertFormInput = z.input<typeof productUpsertSchema>;
 
 export const updateStatusSchema = z.object({
   status: z.enum(ORDER_STATUSES),
