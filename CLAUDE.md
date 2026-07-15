@@ -103,7 +103,15 @@ Notes that will save you time:
   PrismaPg adapter in PrismaService.
 - Playwright: don't use bare `getByRole("alert")` — Next.js's route
   announcer also has role=alert; match message text instead.
-- Server env: `server/.env` (copied from `.env.example`).
+- Server env: `server/.env` (copied from `.env.example`). **Active DB is
+  Neon cloud PG** (since 2026-07-15): `DATABASE_URL` = pooled endpoint
+  (runtime, PrismaPg adapter), `DIRECT_DATABASE_URL` = non-pooler endpoint
+  (prisma migrate/CLI — PgBouncer can't run migrations). Local Docker PG
+  remains available via the commented URL + `npm run db:up`. Never commit
+  real credentials; `.env` is gitignored.
+- Windows: stopping `npm run dev:server` can orphan the node child still
+  holding :3001. If the port is stuck:
+  `Get-NetTCPConnection -LocalPort 3001 -State Listen | % { Stop-Process -Id $_.OwningProcess -Force }`
 
 ## Explicitly deferred (do not build without updating the design doc first)
 
