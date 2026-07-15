@@ -1,0 +1,91 @@
+// Entity relationships:
+//
+//   Product 1 ──── * OrderItem * ──── 1 Order
+//   AdminUser (standalone; operates the store)
+//
+// Prices are integer poisha (1 BDT = 100 poisha) — no floats in money.
+// moduleFormat "cjs" is required: Prisma 7 emits ESM by default, which
+// NestJS's CommonJS build cannot load (eng review 2A).
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+// Connection URL lives in prisma.config.ts (Prisma 7: `url` is not allowed
+// here); the runtime client passes a PrismaPg adapter in PrismaService.
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model Product {
+  id                     Int         @id @default(autoincrement())
+  name                   String
+  genericName            String
+  brand                  String      @default("")
+  manufacturer           String
+  strength               String      @default("")
+  dosageForm             String
+  packUnit               String
+  category               String
+  pricePaisa             Int
+  stockQty               Int         @default(0)
+  imageUrl               String?
+  nearestExpiry          DateTime?
+  isPrescriptionRequired Boolean     @default(false)
+  isActive               Boolean     @default(true)
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+  orderItems             OrderItem[]
+
+  @@unique([name, strength, packUnit])
+  @@index([category])
+  @@index([isActive, isPrescriptionRequired])
+}
+
+model Order {
+  id               Int         @id @default(autoincrement())
+  customerName     String
+  phone            String
+  deliveryArea     String
+  address          String
+  status           OrderStatus @default(NEW)
+  subtotalPaisa    Int
+  deliveryFeePaisa Int
+  totalPaisa       Int
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  items            OrderItem[]
+
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id             Int     @id @default(autoincrement())
+  orderId        Int
+  productId      Int
+  productName    String
+  packUnit       String
+  qty            Int
+  unitPricePaisa Int
+  order          Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product        Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+}
+
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}

@@ -1,0 +1,26 @@
+{
+  "name": "medistore",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "server",
+    "client",
+    "admin",
+    "e2e"
+  ],
+  "scripts": {
+    "dev:server": "npm run start:dev -w server",
+    "dev:client": "npm run dev -w client",
+    "dev:admin": "npm run dev -w admin",
+    "build": "npm run build -w packages/shared && npm run build -w server && npm run build -w client && npm run build -w admin",
+    "test": "npm run test -w server && npm run test -w client && npm run test -w admin",
+    "test:e2e": "npm run test:e2e -w e2e",
+    "db:up": "docker compose up -d db",
+    "db:migrate": "npm run prisma:migrate -w server",
+    "db:seed": "npm run prisma:seed -w server"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

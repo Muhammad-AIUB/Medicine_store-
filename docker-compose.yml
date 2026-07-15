@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: medistore-db
+    environment:
+      POSTGRES_USER: medistore
+      POSTGRES_PASSWORD: medistore_dev
+      POSTGRES_DB: medistore
+    ports:
+      - "5432:5432"
+    volumes:
+      - medistore_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medistore"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  medistore_pgdata:

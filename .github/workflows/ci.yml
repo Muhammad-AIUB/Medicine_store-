@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  DATABASE_URL: postgresql://medistore:medistore_dev@localhost:5432/medistore
+  JWT_SECRET: ci-secret
+  ADMIN_EMAIL: admin@medistore.local
+  ADMIN_PASSWORD: ci-admin-password
+  CORS_ORIGINS: http://localhost:3000,http://localhost:3002
+  SERVED_AREAS: Dhanmondi
+  DELIVERY_FEE_BDT: "60"
+  DELIVERY_CUTOFF_HOUR: "18"
+  SUPPORT_PHONE: "01700000000"
+  NEXT_PUBLIC_API_URL: http://localhost:3001
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: medistore
+          POSTGRES_PASSWORD: medistore_dev
+          POSTGRES_DB: medistore
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U medistore"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build -w packages/shared
+      - run: npm run prisma:generate -w server
+      - run: npm run prisma:deploy -w server
+      - run: npm run prisma:seed -w server
+      - run: npm run build -w server
+      - run: npm run build -w client
+      - run: npm run build -w admin
+      - run: npm run test -w server
+      - run: npm run test -w client
+      - run: npm run test -w admin
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: medistore
+          POSTGRES_PASSWORD: medistore_dev
+          POSTGRES_DB: medistore
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U medistore"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build -w packages/shared
+      - run: npm run prisma:generate -w server
+      - run: npm run prisma:deploy -w server
+      - run: npm run prisma:seed -w server
+      - run: npx playwright install --with-deps chromium
+        working-directory: e2e
+      - run: npm run test:e2e -w e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: e2e/playwright-report
